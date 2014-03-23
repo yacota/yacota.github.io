@@ -34,12 +34,17 @@ var scc = (function() {
         }
     });
 
+    var searchResultsTemplate   = compileTemplate( $("#search-result-template").html() );
+    var featuredResultsTemplate = compileTemplate( $("#featured-result-template").html() );
+
+    // compile template
+    function compileTemplate(srcTemplate) {
+        return Handlebars.compile(srcTemplate);
+    }
+
     // Register event listeners
     $('#search-button').on('click', function() {
         showSearchPage();
-        //var a = $('#search-products');
-        var temp = document.getElementById('search-products');
-        loadSearchResults(temp);
     });
 
     //searchButton.addEventListener('click',     showSearchPage, false);
@@ -48,69 +53,20 @@ var scc = (function() {
     footerHomeLink.addEventListener('click',   showHomePage,   false);
     searcherHomeLink.addEventListener('click', showHomePage,   false);
 
-
-
-
-
     // loading search results when search page is shown
-    function loadSearchResults(target) {
+    function loadJsonData(target, jsonUrl, template) {
         $.ajax({
-            url: 'assets/data/search-results.json',
+            url: jsonUrl,
             type: 'GET',
             dataType: 'json'
         }).done(function (data) {
+            target.innerHTML = "";
             data.items.forEach(function(entry) {
-                var thumb = entry.thumb;
-                var title = entry.title;
-                var url   = entry.url;
-                var desc  = entry.description;
-                var time  = entry.timeleft;
-                var watch = entry.watchers;
-                var price = entry.price;
-                target.innerHTML += '<li id="result" class="col-sm-12 col-md-6">' +
-                                    '<div class="col-xs-6">' +
-                                        '<a href="javascript:void(0)"><img src='+thumb+' alt="" class="img-responsive"></a>' +
-                                    '</div>' +
-                                    '<div class="product-description-holder col-xs-6">' +
-                                        '<h2><a href="javascript:void(0)">'+ title +'</a></h2>' +
-                                        '<p>' +
-                                        desc +
-                                        '</p>' +
-                                    '</div>' +
-                                    '<div class="row col-xs-12">' +
-                                        '<div class="col-xs-12 col-sm-4">' +
-                                            '<div class="col-sm-12 col-xs-6">' +
-                                            time+'h left' +
-                                            '</div>' +
-                                            '<div class="col-sm-12 col-xs-6">' +
-                                            'Today 15.23' +
-                                            '</div>' +
-                                        '</div>' +
-                                        '<div class="col-xs-12 col-sm-4">' +
-                                            '<div class="col-sm-12 col-xs-6">' +
-                                                '<span class="glyphicon glyphicon-eye-open"></span>' +
-                                                '<span class="badge">'+ watch +'</span>' +
-                                            '</div>' +
-                                            '<div class="col-sm-12 col-xs-6">' +
-                                            'Watchers' +
-                                            '</div>' +
-                                        '</div>' +
-
-                                        '<div class="col-xs-12 col-sm-4">' +
-                                            '<div class="col-sm-12 col-xs-6">' +
-                                            '$' + price +
-                                            '</div>' +
-                                            '<div class="col-sm-12 col-xs-6">' +
-                                            'Current Price' +
-                                            '</div>' +
-                                        '</div>' +
-                                    '</div>' +
-                                '</li>';
+                target.innerHTML += template(entry);
             });
-
         }).fail(function (jqXHR, textStatus) {
             // showing no results but because of an error
-            target.innerHTML = 'No results found due to an error, check footer message below';
+            target.innerHTML = 'No data found due to an error, check footer message below';
         });
     }
 
@@ -121,6 +77,8 @@ var scc = (function() {
 
         searchFormCont.style.display  = "block";
         productsearch.style.display   = "block";
+        var temp = document.getElementById('search-products');
+        loadJsonData(temp, 'assets/data/search-results.json', searchResultsTemplate);
     }
 
     function showHomePage() {
@@ -130,6 +88,8 @@ var scc = (function() {
         searchForm.style.display  = "block";
         carousel.style.display    = "block";
         productlist.style.display = "block";
+        var temp = document.getElementById('featured-products');
+        loadJsonData(temp, 'assets/data/featured-products.json', featuredResultsTemplate);
     }
 
     var windowlanguage = window.navigator.userLanguage || window.navigator.language;
@@ -153,5 +113,6 @@ var scc = (function() {
         document.getElementById('span-slider-upper').value = '$'+ev.value[1];
     });
 
-
+    // init loading json data
+    showHomePage();
 })();
